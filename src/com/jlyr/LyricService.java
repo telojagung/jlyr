@@ -48,8 +48,6 @@ public class LyricService extends Service {
 			NowPlaying np = new NowPlaying();
 			mCurrentTrack = np.getTrack();
 			
-			Log.i(TAG, "Hello: " + mCurrentTrack);
-			
 			if (mCurrentTrack == null) {
 				clearNotification();
 			} else {
@@ -94,9 +92,11 @@ public class LyricService extends Service {
 		
 		if (notif.equals("0")) {
 			// Never show
+			Log.i(TAG, "Never show notification.");
 			return false;
 		} else if (notif.equals("1")) {
 			// Always show
+			Log.i(TAG, "Always show notification.");
 			return true;
 		} else if (notif.equals("2")) {
 			// Show only if saved
@@ -105,6 +105,9 @@ public class LyricService extends Service {
 			if (file == null || !file.exists()) {
 				Log.i(TAG, "File " + file + " does not exist.");
 				return false;
+			} else {
+				Log.i(TAG, "Show because saved.");
+				return true;
 			}
 		} else if (notif.equals("3")) {
 			// Show only if not saved
@@ -113,9 +116,11 @@ public class LyricService extends Service {
 			if (file != null && file.exists()) {
 				Log.i(TAG, "File " + file + " exists already.");
 				return false;
+			} else {
+				Log.i(TAG, "Don't show because not saved.");
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	private Handler getLoadHandler(final Lyrics lyrics) {

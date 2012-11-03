@@ -65,8 +65,14 @@ public abstract class BuiltInMusicAppReceiver extends
 
 		Track t = parseTrack(ctx, bundle);
 		setTrack(t);
-
-		if (action.equals(stop_action)) {
+		
+		Log.d(TAG, "Action is: "+action);
+		Log.d(TAG, "Bundle has: "+bundle.keySet().toString());
+		
+		// This is sent in the CM built-in player, at least.
+		boolean playing = bundle.getBoolean("playing", true);
+		
+		if (action.equals(stop_action) || !playing) {
 			setState(Track.State.PLAYLIST_FINISHED);
 		} else {
 			setState(Track.State.RESUME);

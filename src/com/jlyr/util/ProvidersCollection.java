@@ -15,6 +15,7 @@ import android.util.Log;
 import com.jlyr.providers.AZLyricsProvider;
 import com.jlyr.providers.ChartLyricsProvider;
 import com.jlyr.providers.DummyProvider;
+import com.jlyr.providers.JamendoProvider;
 import com.jlyr.providers.LyrDbProvider;
 import com.jlyr.providers.LyricsProvider;
 import com.jlyr.providers.MetroLyricsProvider;
@@ -28,6 +29,7 @@ public class ProvidersCollection {
 			put("MetroLyrics", MetroLyricsProvider.class);
 			put("LyrDB", LyrDbProvider.class);
 			put("ChartLyrics", ChartLyricsProvider.class);
+			put("Jamendo", JamendoProvider.class);
 			put("Dummy", DummyProvider.class);
 		}
 	};

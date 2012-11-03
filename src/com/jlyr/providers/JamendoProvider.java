@@ -1,16 +1,8 @@
 package com.jlyr.providers;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 
 import com.jlyr.util.Track;
@@ -21,25 +13,33 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-public class ChartLyricsProvider extends LyricsProvider {
+public class JamendoProvider extends LyricsProvider {
 	
-	public static final String TAG = "JLyrChartLyricsProvider";
+	public static final String TAG = "JLyrJamendoProvider";
 	
-	public ChartLyricsProvider(Track track) {
+	public JamendoProvider(Track track) {
 		super(track);
 	}
 	
 	public String getSource() {
-		return "ChartLyrics";
+		return "Jamendo";
 	}
 	
 	@Override
 	public void loadLyrics(Handler _handler) {
 		mHandler = _handler;
+
+		/* For XML 
+		String url = "http://api.jamendo.com" +
+					"/get2/id+name+artist_name+text/track/xml/artist_album+album_track/" +
+					"?searchquery=" + enc(mTrack.getArtist()+" "+mTrack.getTitle()) +
+					"&n=1&order=searchweight_desc";
+		*/
+		String url = "http://api.jamendo.com" +
+				"/get2/text/track/plain/artist_album+album_track/" +
+				"?searchquery=" + enc(mTrack.getArtist()+" "+mTrack.getTitle()) +
+				"&n=1&order=searchweight_desc";
 		
-		String baseURL = "http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?" + 
-					"artist=" + enc(mTrack.getArtist()) + "&" + 
-					"song=" + enc(mTrack.getTitle());
 		Handler handler = new Handler() {
 			public void handleMessage(Message message) {
 				switch (message.what) {
@@ -49,7 +49,17 @@ public class ChartLyricsProvider extends LyricsProvider {
 				}
 				case HttpConnection.DID_SUCCEED: {
 					String response = (String) message.obj;
-					mLyrics = parse(response);
+					
+					if (response.equals("")) {
+						mLyrics = null;
+						doFail();
+						break;
+					}
+					
+					mLyrics = response;
+					doLoad();
+					// If the return type were to be xml, then:
+					//mLyrics = parse(response);
 					break;
 				}
 				case HttpConnection.DID_ERROR: {
@@ -58,49 +68,32 @@ public class ChartLyricsProvider extends LyricsProvider {
 					// Otherwise find a way to use printStackTrace()
 					Log.e(TAG, "Error: " + e.getMessage());
 					
-					mLyrics = null;
-					
 					doError();
 					break;
 				}
 				}
 			}
 		};
-		new HttpConnection(handler).get(baseURL);
-		Log.v(TAG, "Fetching url: " + baseURL);
+		new HttpConnection(handler).get(url);
+		Log.v(TAG, "Fetching: " + url);
 	}
 	
 	private String parse(String response) {
-		
-		String eol = System.getProperty("line.separator");
-		
 		Document doc = Jsoup.parse(response, "", Parser.xmlParser());
 		
-		Element lyrics_el = doc.select("GetLyricResult > Lyric").first();
-		String lyrics = null;
-		if (lyrics_el == null) {
-			Log.w(TAG, "No Lyrics tag.");
-			doFail();
+		Element id_el = doc.select("data > track > id").first();
+		if (id_el == null) {
+			Log.w(TAG, "No ID tag.");
 			return null;
-		} else {
-			List<Node> els = lyrics_el.childNodes();
-			lyrics = "";
-			for (Node node : els) {
-				if (node instanceof TextNode) {
-					lyrics += ((TextNode) node).getWholeText();
-				} else {
-					lyrics += eol;
-				}
-			}
 		}
 		
-		Element name_el = doc.select("GetLyricResult > LyricSong").first();
+		Element name_el = doc.select("data > track > name").first();
 		String title = "";
 		if (name_el != null) {
 			title = name_el.text();
 		}
 		
-		Element artist_name_el = doc.select("GetLyricResult > LyricArtist").first();
+		Element artist_name_el = doc.select("data > track > artist_name").first();
 		String artist = "";
 		if (artist_name_el != null) {
 			artist = artist_name_el.text();
@@ -109,9 +102,16 @@ public class ChartLyricsProvider extends LyricsProvider {
 		if (!artist.equalsIgnoreCase(mTrack.getArtist()) || !title.equalsIgnoreCase(mTrack.getTitle())) {
 			Log.w(TAG, "The title and/or artist do not match respectively");
 		}
-
-		doLoad();
 		
-		return "[ ChartLyrics - " + (artist==null? "NULL" : artist) + " - " + (title==null? "NULL" : title) + " ]" + eol + lyrics;
+		Element text_el = doc.select("data > track > text").first();
+		String lyrics = null;
+		if (text_el != null) {
+			lyrics = text_el.text();
+		}
+		
+		String eol = System.getProperty("line.separator");
+		
+		doLoad();
+		return "[ Jamendo - " + title + " - " + artist + " ]" + eol + lyrics;
 	}
 }

@@ -1,7 +1,6 @@
 - add more providers
 - add more receivers
 - allow to choose receivers (like in Simple Last.fm Scrobbler)
-- main screen should display the name of now playing song
 - maybe use database to save names of stored lyrics, to use search and/or load better in browser
 - save in local file track info and provider/source. it should be displayed in the viewer
 - add edit functionality to the saved lyrics.
