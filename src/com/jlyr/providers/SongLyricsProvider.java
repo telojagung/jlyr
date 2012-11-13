@@ -17,16 +17,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-public class AZLyricsProvider extends LyricsProvider {
+public class SongLyricsProvider extends LyricsProvider {
 	
-	public static final String TAG = "JLyrAZLyricsProvider";
+	public static final String TAG = "JLyrSongLyricsProvider";
 	
-	public AZLyricsProvider(Track track) {
+	public SongLyricsProvider(Track track) {
 		super(track);
 	}
 	
 	public String getSource() {
-		return "AZLyrics";
+		return "SongLyrics";
 	}
 	
 	@Override
@@ -36,7 +36,7 @@ public class AZLyricsProvider extends LyricsProvider {
 		// TODO: we are relying on DuckDuckGo, we shouldn't:
 		// AZLyrics removes spaces: /lyrics/jamesblunt/staythenight.html
 		// and maybe punctuation also. See ILyrics they do it in Ruby, but I didn't get it right yet.
-		String search_query = "\\ site:azlyrics.com " + mTrack.getArtist() + " " + mTrack.getTitle();
+		String search_query = "\\ site:songlyrics.com " + mTrack.getArtist() + " " + mTrack.getTitle();
 		final String baseURL = "http://www.duckduckgo.com/?q=" + enc(search_query);
 		Handler handler = new Handler() {
 			public void handleMessage(Message message) {
@@ -50,7 +50,7 @@ public class AZLyricsProvider extends LyricsProvider {
 					Document doc = Parser.parse(response, baseURL);
 					String content = doc.select("meta[http-equiv=refresh]").first().attr("content");
 					String url = content.substring(content.indexOf("url=")+4);
-					if (url.startsWith("http://www.azlyrics.com/lyrics/")) {
+					if (url.startsWith("http://www.songlyrics.com/")) {
 						getActualContent(url);
 					} else {
 						Log.w(TAG, "DuckDuckGo got a wrong link: " + url);
@@ -62,7 +62,7 @@ public class AZLyricsProvider extends LyricsProvider {
 					Exception e = (Exception) message.obj;
 					// TODO: try e.toString() maybe it gives more detail about the error
 					// Otherwise find a way to use printStackTrace()
-					Log.e(TAG, "Error: " + e.getMessage());
+					Log.e(TAG, "Error: " + e.toString());
 					
 					mLyrics = null;
 					
@@ -117,25 +117,18 @@ public class AZLyricsProvider extends LyricsProvider {
 			Log.w(TAG, "No title tag");
 		} else {
 			title = title_el.text();
-			title = title.replace(" LYRICS - ", " - ");
+			title = title.replace(" LYRICS", "");
 		}
 		
-		Elements divs = doc.select("div#main div");
-		if (divs.size()<4) {
-			Log.e(TAG, "No body div");
-			doFail();
-			return null;
-		}
-		Element body = divs.get(3);
-
-		if (body == null) {
-			Log.e(TAG, "No lyrics div tag");
+		Element p = doc.select("p#songLyricsDiv").get(0);
+		if (p == null) {
+			Log.e(TAG, "No lyrics paragraph");
 			doFail();
 			return null;
 		}
 
 		String eol = System.getProperty("line.separator");
-		List<Node> els = body.childNodes();
+		List<Node> els = p.childNodes();
 		String lyrics = "";
 		for (Node node : els) {
 			if (node instanceof TextNode) {
@@ -146,6 +139,6 @@ public class AZLyricsProvider extends LyricsProvider {
 		}
 
 		doLoad();
-		return "[ AZLyrics - " + (title==null? "NULL":title) + " ]" + eol + lyrics;
+		return "[ SongLyrics - " + (title==null? "NULL":title) + " ]" + eol + lyrics;
 	}
 }
