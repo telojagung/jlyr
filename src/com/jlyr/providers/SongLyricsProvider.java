@@ -120,7 +120,7 @@ public class SongLyricsProvider extends LyricsProvider {
 			title = title.replace(" LYRICS", "");
 		}
 		
-		Element p = doc.select("p#songLyricsDiv").get(0);
+		Element p = doc.select("p#songLyricsDiv").first();
 		if (p == null) {
 			Log.e(TAG, "No lyrics paragraph");
 			doFail();

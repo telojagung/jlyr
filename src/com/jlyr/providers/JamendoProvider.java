@@ -50,6 +50,7 @@ public class JamendoProvider extends LyricsProvider {
 				case HttpConnection.DID_SUCCEED: {
 					String response = (String) message.obj;
 					
+					response = response.trim();
 					if (response.equals("")) {
 						mLyrics = null;
 						doFail();
