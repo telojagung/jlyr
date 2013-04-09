@@ -52,12 +52,21 @@ public class DarkLyricsProvider extends LyricsProvider {
 					
 					String response = (String) message.obj;
 					Document doc = Parser.parse(response, baseURL);
-					String url = doc.select("div.cont div.album a:contains(" + title + ")").first().absUrl("href");
+					
+					Element anchor = doc.select("div.cont div.album a:contains(" + title + ")").first();
+					if (anchor == null) {
+						Log.w(TAG, "Did not find the track anchor");
+						doFail();
+						break;
+					}
+					
+					String url = anchor.absUrl("href");
 					if (url.startsWith("http://www.darklyrics.com/lyrics/")) {
 						getActualContent(url);
 					} else {
-						Log.w(TAG, "DuckDuckGo got a wrong link: " + url);
+						Log.w(TAG, "We got a wrong link: " + url);
 						doFail();
+						break;
 					}
 					break;
 				}
