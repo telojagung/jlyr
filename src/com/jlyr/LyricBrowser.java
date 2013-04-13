@@ -15,6 +15,7 @@ import com.jlyr.util.TrackBrowser.TrackView;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class LyricBrowser extends ListActivity {
 	private Menu mMenu;
 	private ArrayAdapter<TrackBrowser.TrackView> la = null;
 	private List<TrackBrowser.TrackView> mList = null;
+	private ProgressDialog loadingDialog;
 	
 	private static final Comparator<TrackBrowser.TrackView> mComparator = new Comparator<TrackBrowser.TrackView>() {
 
@@ -64,6 +66,8 @@ public class LyricBrowser extends ListActivity {
 	    	mi.setEnabled(false);
     	}
     	
+    	loadingDialog = ProgressDialog.show(this, getString(R.string.loading_title), getString(R.string.loading_message), false);
+    	
         final ListView lv = getListView();
         lv.setTextFilterEnabled(true);
         
@@ -85,6 +89,7 @@ public class LyricBrowser extends ListActivity {
 				    	MenuItem mi = mMenu.getItem(0);
 				    	mi.setEnabled(true);
 			    	}
+					loadingDialog.dismiss();
 					//la.sort(mComparator);
 					break;
 				}
@@ -101,6 +106,7 @@ public class LyricBrowser extends ListActivity {
 					// TODO: try e.toString() maybe it gives more detail about the error
 					// Otherwise find a way to use printStackTrace()
 					Log.e(TAG, "Error: " + e.getMessage());
+					loadingDialog.dismiss();
 					break;
 				}
 				}

@@ -36,6 +36,10 @@
     <string name="browser">Browser</string>
     <string name="info">Info</string>
     
+    <!-- Lyrics Browser -->
+    <string name="loading_title">Loading...</string>
+    <string name="loading_message">Please wait...</string>
+    
     <!-- Lyrics Browser Menu -->
     <string name="wipe_lyrics">Wipe</string>
     <string name="now_playing">Now Playing</string>
@@ -75,6 +79,11 @@
     <!-- Viewer Reset -->
     <string name="settings_viewer_reset">Reset Display Settings</string>
     <string name="settings_viewer_reset_summary">Return font and background settings for viewer to default</string>
+    
+    <!-- Viewer Behaviour -->
+    <string name="settings_viewer_update_now_playing">Update Now Playing</string>
+    <string name="settings_do_viewer_update_now_playing">If viewing the now playing song, the viewer will update the lyrics if the now playing song changes.</string>
+    <string name="settings_dont_viewer_update_now_playing">If viewing the now playing song, the viewer will keep the lyrics of the last song if the now playing song changes.</string>
     
     <!-- Fetcher Behavior -->
     <string name="settings_auto_save_lyrics">Auto save lyrics</string>

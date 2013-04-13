@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.jlyr.util.Lyrics;
 import com.jlyr.util.NowPlaying;
 import com.jlyr.util.Track;
 
@@ -17,11 +16,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 import android.util.Log;
 
 public class JLyrMain extends ListActivity {
@@ -34,6 +33,20 @@ public class JLyrMain extends ListActivity {
         super.onCreate(savedInstanceState);
         
         populateList();
+    }
+    
+    public void onResume() {
+    	super.onResume();
+    	NowPlaying.setHandler(new Handler() {
+			public void handleMessage(Message message) {
+				populateList();
+			}
+		});
+    }
+    
+    public void onPause() {
+    	super.onPause();
+    	NowPlaying.setHandler(null);
     }
     
     private void populateList() {
@@ -49,12 +62,6 @@ public class JLyrMain extends ListActivity {
         if (track != null) {
         	details[0] = track.toString();
         }
-        
-        NowPlaying.setHandler(new Handler() {
-			public void handleMessage(Message message) {
-				Log.i(TAG, "Got a message!");
-			}
-		});
         
         List<HashMap<String, String>> mArray = new ArrayList<HashMap<String, String>>();
         for (int i = 0; i<items.length; i++) {

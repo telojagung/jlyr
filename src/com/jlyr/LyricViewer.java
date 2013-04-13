@@ -38,8 +38,10 @@ public class LyricViewer extends Activity {
 	
 	Track mTrack = null;
 	Lyrics mLyrics = null;
-	boolean isLoading = false;
+	boolean mIsLoading = false;
 	Remember mRemember = null;
+	boolean mIsNowPlaying = false;
+	boolean mUpdateNowPlaying = true;
 	
 	String[] mSources = null;
 	String[] mAllSources = null;
@@ -54,7 +56,8 @@ public class LyricViewer extends Activity {
 	private class Remember {
 		public Track track = null;
 		public Lyrics lyrics = null;
-		public boolean loading = false;
+		public boolean isLoading = false;
+		public boolean isNowPlaying = false;
 		public String[] sources = null;
 		public int scrollY = 0;
 		public Handler handler;
@@ -72,6 +75,8 @@ public class LyricViewer extends Activity {
         mText.setMovementMethod(new ScrollingMovementMethod());
         
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        
+        mUpdateNowPlaying = SP.getBoolean("viewer_update_now_playing", true);
         
         int bg_color = SP.getInt("viewer_bg_color", -1);
         if (bg_color != -1) {
@@ -98,7 +103,7 @@ public class LyricViewer extends Activity {
             mTrack = r.track;
             mLyrics = r.lyrics;
             mSources = r.sources;
-            isLoading = r.loading;
+            mIsLoading = r.isLoading;
             
             mScrollY = r.scrollY;
             
@@ -107,7 +112,7 @@ public class LyricViewer extends Activity {
     			return;
     		}
             
-            if (isLoading) {
+            if (mIsLoading) {
 	            String trackInfoStr = mTrack.toString();
 	        	mText.setText("Loading lyrics for " + trackInfoStr + " ...");
 	        	r.handler = getLoadHandler();
@@ -125,13 +130,35 @@ public class LyricViewer extends Activity {
         	{
         		track = mTrack;
         		lyrics = mLyrics;
-        		loading = isLoading;
+        		isLoading = mIsLoading;
         		sources = mSources;
         		scrollY = mText.getScrollY();
+        		isNowPlaying = mIsNowPlaying;
         	}
         	
         };
         return mRemember;
+    }
+    
+    public void onResume() {
+    	super.onResume();
+    	if (mIsNowPlaying && mUpdateNowPlaying) {
+	    	NowPlaying.setHandler(new Handler() {
+				public void handleMessage(Message message) {
+					mTrack = getPlayingTrack();
+					if (mTrack != null) {
+						fillLyrics();
+					}
+				}
+			});
+    	} else {
+    		NowPlaying.setHandler(null);
+    	}
+    }
+    
+    public void onPause() {
+    	super.onPause();
+    	NowPlaying.setHandler(null);
     }
     
     private void fillLyrics() {
@@ -143,6 +170,8 @@ public class LyricViewer extends Activity {
         		if (mTrack == null) {
         			mText.setText(getText(R.string.no_track_specified));
         			return;
+        		} else {
+        			mIsNowPlaying = true;
         		}
         	}
 		}
@@ -164,7 +193,7 @@ public class LyricViewer extends Activity {
     	
     	mLyrics = new Lyrics(getBaseContext(), mTrack, mSources);
     	
-    	isLoading = true;
+    	mIsLoading = true;
     	mLyrics.loadLyrics(getLoadHandler());
     }
     
@@ -172,7 +201,7 @@ public class LyricViewer extends Activity {
     	Handler handler = new Handler() {
 			public void handleMessage(Message message) {
 				if (mRemember != null) {
-					mRemember.loading = false;
+					mRemember.isLoading = false;
 					Message msg = Message.obtain(mRemember.handler, message.what, message.obj);
         			mRemember.handler.sendMessage(msg);
         			return;
@@ -206,7 +235,7 @@ public class LyricViewer extends Activity {
 	    	mMenu.setGroupEnabled(0, true);
     	}
     	
-    	isLoading = false;
+    	mIsLoading = false;
     	String trackInfoStr = mTrack.toString();
         String lyricsStr = mLyrics.getLyrics();
         

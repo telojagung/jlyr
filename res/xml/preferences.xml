@@ -53,6 +53,11 @@
             android:summaryOff="@string/settings_dont_fetch_wifi_only"
             android:summaryOn="@string/settings_do_fetch_wifi_only"
             android:title="@string/settings_fetch_wifi_only" />
+        <CheckBoxPreference
+            android:key="viewer_update_now_playing"
+            android:summaryOff="@string/settings_dont_viewer_update_now_playing"
+            android:summaryOn="@string/settings_do_viewer_update_now_playing"
+            android:title="@string/settings_viewer_update_now_playing" android:defaultValue="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_providers_category" >
         <com.jlyr.preference.ProvidersPreference
@@ -62,9 +67,9 @@
             android:title="@string/settings_providers" />
 
         <com.jlyr.preference.ResetStringPreference
+            resetKey="providers"
             android:defaultValue=""
             android:key="providers_reset"
-            resetKey="providers"
             android:summary="@string/settings_providers_reset_summary"
             android:title="@string/settings_providers_reset" />
     </PreferenceCategory>

@@ -36,6 +36,10 @@
     <string name="browser">Navigateur</string>
     <string name="info">Info</string>
     
+    <!-- Lyrics Browser -->
+    <string name="loading_title">Chargement...</string>
+    <string name="loading_message">Veuillez patienter...</string>
+    
     <!-- Lyrics Browser Menu -->
     <string name="wipe_lyrics">Effacer Tous</string>
     <string name="now_playing">En Cours de Lecture</string>
@@ -75,6 +79,11 @@
     <!-- Viewer Reset -->
     <string name="settings_viewer_reset">Effacer préférences du lecteur</string>
     <string name="settings_viewer_reset_summary">Changer le caractère et fond d\'écran aux valeurs initiales</string>
+    
+    <!-- Viewer Behaviour -->
+    <string name="settings_viewer_update_now_playing">Mise à jour de la chanson en cours de lecture</string>
+    <string name="settings_do_viewer_update_now_playing">En voyant les paroles de la chanson en cours de lecture, si cette chanson change les paroles seront mises à jour aussi.</string>
+    <string name="settings_dont_viewer_update_now_playing">En voyant les paroles de la chanson en cours de lecture, si cette chanson change les paroles de l\'ancienne chanson resteront.</string>
     
     <!-- Fetcher Behavior -->
     <string name="settings_auto_save_lyrics">Sauvegarde des paroles</string>
