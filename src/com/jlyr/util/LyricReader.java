@@ -42,7 +42,7 @@ public class LyricReader {
 	}
 	
 	public static File getLyricsDirectory() {
-		File path = Environment.getExternalStorageDirectory(); 
+		File path = Environment.getExternalStorageDirectory();
         File file = new File(path + "/JLyr");
         
         return file;
@@ -56,9 +56,8 @@ public class LyricReader {
 			Log.e(TAG, "File is not null. Cannot get lyrics file.");
 			return;
 		}
-		File path = Environment.getExternalStorageDirectory();
 		String filename = md5(mTrack.getArtist() + " - " + mTrack.getTitle()); 
-        mFile = new File(path, "JLyr/" + filename + ".txt");
+        mFile = new File(getLyricsDirectory(), filename + ".txt");
 	}
 	
 	private void getTrackFromLyricsFile() {
