@@ -134,9 +134,16 @@ public class DarkLyricsProvider extends LyricsProvider {
 			title = title.trim();
 		}
 		
-		String anchor = url.substring(url.indexOf("#")+1);
+		String anchor_id = url.substring(url.indexOf("#")+1);
 		
-		Element h3 = doc.select("div.cntwrap div.cont div.lyrics h3 a[name=" + anchor + "]").first().parent();
+		Element anchor = doc.select("div.cntwrap div.cont div.lyrics h3 a[name=" + anchor_id + "]").first();
+		if (anchor == null) {
+			Log.e(TAG, "No lyrics header");
+			doFail();
+			return null;
+		}
+		
+		Element h3 = anchor.parent();
 		if (h3 == null) {
 			Log.e(TAG, "No lyrics header");
 			doFail();

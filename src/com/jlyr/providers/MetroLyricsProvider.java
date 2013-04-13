@@ -106,62 +106,6 @@ public class MetroLyricsProvider extends LyricsProvider {
 				}
 			}
 		}
-		
-		/*
-        int start_title = response.indexOf("<title>");
-        if (start_title == -1) {
-        	Log.e(TAG, "Title tag was not found");
-        	doFail();
-            return null;
-        }
-        String title = response.substring(start_title);
-        
-        int end_title = title.indexOf(" LYRICS</title>");
-        if (end_title == -1) {
-        	Log.e(TAG, "Title closing tag was not found");
-        	doFail();
-            return null;
-        }
-        title = title.substring(0, end_title);
-        //title = URLDecoder.decode(title);
-        Log.v(TAG, "Page title:" + title);
-        
-        int start_lyrics = response.indexOf("<span class='line line-s' id='line_1'>");
-        if (start_lyrics == -1) {
-        	Log.e(TAG, "Lyrics tag was not found");
-        	doFail();
-            return null;
-        }
-        String lyrics = response.substring(start_lyrics);
-        
-        int end_lyrics = lyrics.indexOf("</div>");
-        if (end_lyrics == -1) {
-        	Log.e(TAG, "Lyrics closing tag was not found");
-        	doFail();
-            return null;
-        }
-        lyrics = lyrics.substring(0, end_lyrics);
-        
-        lyrics = lyrics.replace("<span class='line line-s' id='line_1'>", "");
-        lyrics = lyrics.replaceAll("\\<span class\\=\\'line line-s\\' id\\=\\'line_[0-9][0-9]?\\'\\>\\<span style\\=\\'color:#888888;font-size:0\\.75em\\'\\>\\[.+\\]\\</span\\>", "");
-        lyrics = lyrics.replaceAll("\\<meta [^\\>]*\\>", "");
-        lyrics = lyrics.replaceAll("\\<span class\\=\\'line line-s\\' id\\=\\'line_[0-9][0-9]?\\'\\>", "&#10;");
-        lyrics = lyrics.replaceAll("\\<em class\\=\\\"smline sm\\\" data-meaningid\\=\\\"[0-9]+\\\" \\>", "");
-        lyrics = lyrics.replaceAll("(\\</em\\>)?\\</span\\>", "");
-        lyrics = lyrics.replaceAll("(\\<br /\\>)*\\</p\\>", "");
-        lyrics = lyrics.replace("<br />", "");
-        lyrics = lyrics.replace("&#", "");
-        lyrics = lyrics.trim();
-        lyrics = lyrics.substring(0, lyrics.length()-1);
-        
-        String[] chars = lyrics.split(";");
-        String decoded_lyrics = "";
-        for (String c : chars) {
-        	int i = (int) Integer.valueOf(c);
-        	decoded_lyrics += String.valueOf((char) i);
-        }
-        lyrics = decoded_lyrics;
-        */
 
 		doLoad();
 		return "[ MetroLyrics - " + (title==null? "NULL":title) + " ]" + eol + lyrics;

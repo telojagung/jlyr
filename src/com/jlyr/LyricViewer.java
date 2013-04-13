@@ -7,6 +7,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.res.Resources;
@@ -51,6 +52,9 @@ public class LyricViewer extends Activity {
 	
 	int mScrollY = 0;
 	
+	ProgressDialog mLoadingDialog = null;
+	String mLastProgressStatus = "";
+	
 	public static final String TAG = "JLyrViewer"; 
 	
 	private class Remember {
@@ -60,6 +64,7 @@ public class LyricViewer extends Activity {
 		public boolean isNowPlaying = false;
 		public String[] sources = null;
 		public int scrollY = 0;
+		public String lastProgressStatus = "";
 		public Handler handler;
 	}
 	
@@ -113,9 +118,8 @@ public class LyricViewer extends Activity {
     		}
             
             if (mIsLoading) {
-	            String trackInfoStr = mTrack.toString();
-	        	mText.setText("Loading lyrics for " + trackInfoStr + " ...");
-	        	r.handler = getLoadHandler();
+            	showLoadingDialog(mTrack.toString(), r.lastProgressStatus);
+            	r.handler = getLoadHandler();
             } else {
             	setLyrics();
             }
@@ -134,6 +138,7 @@ public class LyricViewer extends Activity {
         		sources = mSources;
         		scrollY = mText.getScrollY();
         		isNowPlaying = mIsNowPlaying;
+        		lastProgressStatus = mLastProgressStatus;
         	}
         	
         };
@@ -176,8 +181,7 @@ public class LyricViewer extends Activity {
         	}
 		}
     	
-    	String trackInfoStr = mTrack.toString();
-    	mText.setText("Loading lyrics for " + trackInfoStr + " ...");
+    	showLoadingDialog(mTrack.toString(), "");
     	
     	if (mSources == null) {
     		mSources = getSourcesFromIntent();
@@ -206,23 +210,24 @@ public class LyricViewer extends Activity {
         			mRemember.handler.sendMessage(msg);
         			return;
 				}
+				String provider = (String) message.obj; 
 				switch (message.what) {
 				case Lyrics.DID_TRY:
-					Toast.makeText(getApplicationContext(), (((String) message.obj)) + " failed!", Toast.LENGTH_SHORT).show();
+					setProgressStatus(provider + " failed!");
 					break;
 				case Lyrics.DID_LOAD:
 	        		setLyrics();
 					break;
 				case Lyrics.DID_FAIL:
-        			Toast.makeText(getApplicationContext(), "Lyrics not found!", Toast.LENGTH_SHORT).show();
+        			setProgressStatus("Lyrics not found!");
         			setLyrics();
 					break;
 				case Lyrics.DID_ERROR:
-        			Toast.makeText(getApplicationContext(), "An error occured!", Toast.LENGTH_SHORT).show();
+        			setProgressStatus("An error occured!");
         			setLyrics();
 					break;
 				case Lyrics.IS_TRYING:
-        			Toast.makeText(getApplicationContext(), "Trying " + ((String) message.obj), Toast.LENGTH_SHORT).show();
+        			setProgressStatus("Trying " + provider);
 					break;
 				}
 			}
@@ -236,6 +241,9 @@ public class LyricViewer extends Activity {
     	}
     	
     	mIsLoading = false;
+    	mLoadingDialog.dismiss();
+    	mLoadingDialog = null;
+    	
     	String trackInfoStr = mTrack.toString();
         String lyricsStr = mLyrics.getLyrics();
         
@@ -273,6 +281,28 @@ public class LyricViewer extends Activity {
     	return np.getTrack();
     }
     
+    private void showLoadingDialog(String title) {
+    	showLoadingDialog(title, null);
+    }
+    
+    private void showLoadingDialog(String title, String message) {
+    	mLoadingDialog = ProgressDialog.show(this, title, "", false);
+    	if (message != null) {
+    		mLastProgressStatus = "";
+    		setProgressStatus(message);
+    	}
+    }
+    
+    private void setProgressStatus(String message) {
+    	if (mLoadingDialog != null) {
+    		final String genericMessage = getString(R.string.loading_message);
+    		mLoadingDialog.setMessage(genericMessage + "\n> " + message + "\n" + mLastProgressStatus);
+    		mLastProgressStatus = message;
+    	} else {
+    		Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    	}
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Hold on to this
@@ -302,96 +332,15 @@ public class LyricViewer extends Activity {
             	return true;
             
             case R.id.source_menu_item:
-            	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            	
-            	ProvidersCollection providerColl = new ProvidersCollection(getBaseContext(), null);
-                mAllSources = (String[]) providerColl.getSources().toArray();
-            	
-                mSelectedSources = new boolean[mAllSources.length];
-                if (mSources == null) {
-                	for (int i = 0; i < mSelectedSources.length; i++) {
-                        mSelectedSources[i] = true;
-                    }
-                } else {
-                	List<String> sourcesList = Arrays.asList(mSources);
-                	for (int i = 0; i < mSelectedSources.length; i++) {
-                        mSelectedSources[i] = sourcesList.contains(mAllSources[i]);
-                    }
-                }
-                
-                builder.setMultiChoiceItems(mAllSources, mSelectedSources, new OnMultiChoiceClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-						mSelectedSources[which] = isChecked;
-					}
-                })
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    	ArrayList<String> sourcesList = new ArrayList<String>();
-						for (int i = 0; i < mSelectedSources.length; i++) {
-		                    if (mSelectedSources[i]) {
-		                    	sourcesList.add(mAllSources[i]);
-		                    }
-						}
-						mSources = sourcesList.toArray(new String[] {});
-						doDelete();
-						fillLyrics();
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
+            	chooseSource();
             	return true;
                 
             case R.id.browser_menu_item:
-            	AlertDialog.Builder searchBuilder = new AlertDialog.Builder(this);
-                
-            	Resources res = getResources();
-            	final String[] searchEngines = res.getStringArray(R.array.search_engines);
-            	
-            	searchBuilder.setSingleChoiceItems(searchEngines, mSearchEngine, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						mSearchEngine = which;
-					}
-            		
-            	})
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    	String searchEngine = searchEngines[mSearchEngine];
-                    	
-                    	Log.i(TAG, "Searching for: " + mTrack.toString() + " on " + searchEngine);
-                    	
-                    	LyricsWebSearch lws = new LyricsWebSearch(LyricViewer.this, mTrack, searchEngine);
-                    	lws.start();
-                    }
-                });
-
-                AlertDialog searchDialog = searchBuilder.create();
-                searchDialog.show();
+            	searchLyrics();
             	return true;
             	
             case R.id.info_menu_item:
-            	LyricReader reader = new LyricReader(mTrack);
-          		String[] content = reader.getContent();
-            	String info;
-            	if (content[0] == null) {
-            		info = reader.getInfo();
-            	} else {
-            		info = content[0];
-            	}
-            	AlertDialog.Builder infoBuilder = new AlertDialog.Builder(this); 
-            	infoBuilder.setTitle(mTrack.toString())
-            		.setMessage(info)
-        	        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-        	            public void onClick(DialogInterface dialog, int whichButton) {
-        	            	dialog.cancel();
-        	            }
-        	        });
-            	AlertDialog infoDialog = infoBuilder.create();
-            	infoDialog.show();
+            	showInfo();
             	return true;
             	
             default:
@@ -408,5 +357,98 @@ public class LyricViewer extends Activity {
   		if (file.exists()) {
   			file.delete();
   		}
+    }
+    
+    private void chooseSource() {
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	
+    	ProvidersCollection providerColl = new ProvidersCollection(getBaseContext(), null);
+        mAllSources = (String[]) providerColl.getSources().toArray();
+    	
+        mSelectedSources = new boolean[mAllSources.length];
+        if (mSources == null) {
+        	for (int i = 0; i < mSelectedSources.length; i++) {
+                mSelectedSources[i] = true;
+            }
+        } else {
+        	List<String> sourcesList = Arrays.asList(mSources);
+        	for (int i = 0; i < mSelectedSources.length; i++) {
+                mSelectedSources[i] = sourcesList.contains(mAllSources[i]);
+            }
+        }
+        
+        builder.setMultiChoiceItems(mAllSources, mSelectedSources, new OnMultiChoiceClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+				mSelectedSources[which] = isChecked;
+			}
+        })
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            	ArrayList<String> sourcesList = new ArrayList<String>();
+				for (int i = 0; i < mSelectedSources.length; i++) {
+                    if (mSelectedSources[i]) {
+                    	sourcesList.add(mAllSources[i]);
+                    }
+				}
+				mSources = sourcesList.toArray(new String[] {});
+				doDelete();
+				fillLyrics();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    
+    private void searchLyrics() {
+    	AlertDialog.Builder searchBuilder = new AlertDialog.Builder(this);
+        
+    	Resources res = getResources();
+    	final String[] searchEngines = res.getStringArray(R.array.search_engines);
+    	
+    	searchBuilder.setSingleChoiceItems(searchEngines, mSearchEngine, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				mSearchEngine = which;
+			}
+    		
+    	})
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            	String searchEngine = searchEngines[mSearchEngine];
+            	
+            	Log.i(TAG, "Searching for: " + mTrack.toString() + " on " + searchEngine);
+            	
+            	LyricsWebSearch lws = new LyricsWebSearch(LyricViewer.this, mTrack, searchEngine);
+            	lws.start();
+            }
+        });
+
+        AlertDialog searchDialog = searchBuilder.create();
+        searchDialog.show();
+    }
+    
+    private void showInfo() {
+    	LyricReader reader = new LyricReader(mTrack);
+  		String[] content = reader.getContent();
+    	String info;
+    	if (content[0] == null) {
+    		info = reader.getInfo();
+    	} else {
+    		info = content[0];
+    	}
+    	AlertDialog.Builder infoBuilder = new AlertDialog.Builder(this); 
+    	infoBuilder.setTitle(mTrack.toString())
+    		.setMessage(info)
+	        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+	            public void onClick(DialogInterface dialog, int whichButton) {
+	            	dialog.cancel();
+	            }
+	        });
+    	AlertDialog infoDialog = infoBuilder.create();
+    	infoDialog.show();
     }
 }
