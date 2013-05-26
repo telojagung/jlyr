@@ -12,8 +12,10 @@ public class TrackBrowser implements Runnable {
 	public static final int DID_ERROR = 1;
 	public static final int DID_SUCCEED = 2;
 	public static final int ADD = 3;
+	public static final int DID_INTERRUPT = 4;
 
 	private Handler handler;
+	boolean isRunning = false;
 	
 	public static final String TAG = "JLyrTrackBrowser";
 
@@ -46,6 +48,9 @@ public class TrackBrowser implements Runnable {
 	}
 
 	public void run() {
+		
+		isRunning = true;
+		
 		handler.sendMessage(Message.obtain(handler, TrackBrowser.DID_START));
 		try {
 			File dir = LyricReader.getLyricsDirectory();
@@ -54,16 +59,31 @@ public class TrackBrowser implements Runnable {
 	        }
 	        File[] file_list = dir.listFiles();
 	        
-	        for (int i = 0; i < file_list.length; i++) {
+	        Log.i(TAG, "Number of files found: " + file_list.length);
+	        
+	        int i = 0;
+	        while (isRunning && i < file_list.length) {
 	        	LyricReader reader = new LyricReader(file_list[i]);
 	        	Track track = reader.getTrack();
-	        	Log.i(TAG, "Add: " + track);
 	        	TrackView tv = new TrackView(track);
 	        	handler.sendMessage(Message.obtain(handler, TrackBrowser.ADD, tv));
+	        	
+	        	i++;
 	        }
-	        handler.sendMessage(Message.obtain(handler, TrackBrowser.DID_SUCCEED));
+	        
+	        if (isRunning) {
+	        	handler.sendMessage(Message.obtain(handler, TrackBrowser.DID_SUCCEED));
+	        } else {
+	        	handler.sendMessage(Message.obtain(handler, TrackBrowser.DID_INTERRUPT));
+	        }
 		} catch (Exception e) {
 			handler.sendMessage(Message.obtain(handler, TrackBrowser.DID_ERROR, e));
 		}
+		
+		isRunning = false;
+	}
+	
+	public void stop() {
+		isRunning = false;
 	}
  }

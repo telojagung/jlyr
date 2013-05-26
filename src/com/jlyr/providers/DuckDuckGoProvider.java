@@ -1,13 +1,8 @@
 package com.jlyr.providers;
 
-import java.util.List;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
-import org.jsoup.select.Elements;
 
 import com.jlyr.util.Track;
 

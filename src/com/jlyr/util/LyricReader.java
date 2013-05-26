@@ -71,7 +71,6 @@ public class LyricReader {
         String trackInfo = null;
         
         if (mFile.exists()) {
-        	Log.i(TAG, "Lyrics found on disk");
         	String eol = System.getProperty("line.separator");
         	try {
         		FileInputStream in = new FileInputStream(mFile);

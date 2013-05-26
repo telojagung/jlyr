@@ -241,8 +241,10 @@ public class LyricViewer extends Activity {
     	}
     	
     	mIsLoading = false;
-    	mLoadingDialog.dismiss();
-    	mLoadingDialog = null;
+    	if (mLoadingDialog != null) {
+    		mLoadingDialog.dismiss();
+    		mLoadingDialog = null;
+    	}
     	
     	String trackInfoStr = mTrack.toString();
         String lyricsStr = mLyrics.getLyrics();

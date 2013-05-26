@@ -39,6 +39,9 @@ public class LyricBrowser extends ListActivity {
 	private List<TrackBrowser.TrackView> mList = null;
 	private ProgressDialog loadingDialog;
 	
+	private Thread browserThread = null;
+	private TrackBrowser browser = null;
+	
 	private static final Comparator<TrackBrowser.TrackView> mComparator = new Comparator<TrackBrowser.TrackView>() {
 
 		@Override
@@ -60,23 +63,28 @@ public class LyricBrowser extends ListActivity {
         populateList();
     }
     
-    private void populateList() {
-    	if (mMenu != null) {
-	    	MenuItem mi = mMenu.getItem(0);
-	    	mi.setEnabled(false);
+    @Override
+    public void onStop() {
+    	super.onStop();
+    	
+    	if (loadingDialog != null) {
+    		loadingDialog.dismiss();
     	}
+    }
+    
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
     	
-    	loadingDialog = ProgressDialog.show(this, getString(R.string.loading_title), getString(R.string.loading_message), false);
+    	destroyBrowserThread();
+    }
+    
+    private void startBrowserThread() {
     	
-        final ListView lv = getListView();
-        lv.setTextFilterEnabled(true);
-        
-        mList = new ArrayList<TrackBrowser.TrackView>();
-        
-        la = new ArrayAdapter<TrackBrowser.TrackView>(this, R.layout.list_item, mList);
-        setListAdapter(la);
-        
-        Handler handler = new Handler() {
+    	// Destroy the previous running thread (if applicable)
+    	destroyBrowserThread();
+    	
+    	Handler handler = new Handler() {
 			public void handleMessage(Message message) {
 				switch (message.what) {
 				case TrackBrowser.DID_START: {
@@ -90,12 +98,10 @@ public class LyricBrowser extends ListActivity {
 				    	mi.setEnabled(true);
 			    	}
 					loadingDialog.dismiss();
-					//la.sort(mComparator);
 					break;
 				}
 				case TrackBrowser.ADD: {
 					TrackBrowser.TrackView tv = (TrackBrowser.TrackView) message.obj;
-					//la.add(tv);
 					int index = Collections.binarySearch(mList, tv, mComparator);
 					mList.add((index < 0) ? (-index - 1) : index, tv);
 					la.notifyDataSetChanged();
@@ -109,13 +115,47 @@ public class LyricBrowser extends ListActivity {
 					loadingDialog.dismiss();
 					break;
 				}
+				case TrackBrowser.DID_INTERRUPT: {
+					Log.w(TAG, "Lyric Browser interrupted");
+					break;
+				}
 				}
 			}
 		};
         
-        TrackBrowser tb = new TrackBrowser(handler); 
-        Thread thread = new Thread(tb);
-		thread.start();
+        browser = new TrackBrowser(handler); 
+        browserThread = new Thread(browser);
+        browserThread.start();
+    }
+    
+    private void destroyBrowserThread() {
+    	if (browserThread != null && browserThread.isAlive()) {
+    		browser.stop();
+    	}
+    }
+    
+    private void populateList() {
+    	if (mMenu != null) {
+	    	MenuItem mi = mMenu.getItem(0);
+	    	mi.setEnabled(false);
+    	}
+    	
+    	loadingDialog = ProgressDialog.show(this, getString(R.string.loading_title),
+    			getString(R.string.loading_message), false, true,
+    			new DialogInterface.OnCancelListener() {
+		    		@Override
+		    		public void onCancel(DialogInterface dialog) {
+		    			destroyBrowserThread();
+		    		}
+    	});
+    	
+        final ListView lv = getListView();
+        lv.setTextFilterEnabled(true);
+        
+        mList = new ArrayList<TrackBrowser.TrackView>();
+        
+        la = new ArrayAdapter<TrackBrowser.TrackView>(this, R.layout.list_item, mList);
+        setListAdapter(la);
         
         lv.setOnItemClickListener(new OnItemClickListener() {
           public void onItemClick(AdapterView<?> parent, View view,
@@ -139,6 +179,8 @@ public class LyricBrowser extends ListActivity {
               	return true;
             }
         });
+        
+        startBrowserThread();
     }
     
     @Override
