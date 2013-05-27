@@ -19,10 +19,6 @@
 
 package com.jlyr.receiver;
 
-import android.content.Context;
-import android.os.Bundle;
-import android.widget.Toast;
-
 /**
  * A BroadcastReceiver for intents sent by the Samsung default Music Player.
  * 

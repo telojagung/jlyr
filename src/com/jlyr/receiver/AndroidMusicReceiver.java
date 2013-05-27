@@ -20,8 +20,6 @@
 
 package com.jlyr.receiver;
 
-import android.content.Context;
-
 /**
  * A BroadcastReceiver for intents sent by the Android Music Player.
  * 
