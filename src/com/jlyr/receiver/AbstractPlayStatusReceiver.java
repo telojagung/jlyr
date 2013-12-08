@@ -26,9 +26,13 @@ public abstract class AbstractPlayStatusReceiver extends BroadcastReceiver {
 		Log.v(TAG, "Action received was: " + action);
 
 		// check to make sure we actually got something
-		if (action == null || bundle == null) {
-			Log.w(TAG, "Got null action or null bundle");
+		if (action == null) {
+			Log.w(TAG, "Got null action");
 			return;
+		}
+
+		if (bundle == null) {
+			bundle = Bundle.EMPTY;
 		}
 
 		mService = new Intent(LyricService.ACTION_PLAYSTATECHANGED);
@@ -36,7 +40,7 @@ public abstract class AbstractPlayStatusReceiver extends BroadcastReceiver {
 		try {
 			parseIntent(context, action, bundle); // might throw
 
-			// parseIntent must have called setMusicAPI and setTrack
+			// parseIntent must have called setTrack
 			// with non-null values
 			if (mTrack == null) {
 				throw new IllegalArgumentException("null track");
@@ -45,7 +49,7 @@ public abstract class AbstractPlayStatusReceiver extends BroadcastReceiver {
 			NowPlaying np = new NowPlaying();
 			np.addItem(mTrack, mState);
 
-			// start/call the LyricService
+			// start/call the Lyrics Service
 			context.startService(mService);
 		} catch (IllegalArgumentException e) {
 			Log.i(TAG, "Got a bad track, ignoring it (" + e.getMessage() + ")");
