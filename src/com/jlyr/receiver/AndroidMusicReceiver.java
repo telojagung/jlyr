@@ -42,12 +42,4 @@ public class AndroidMusicReceiver extends BuiltInMusicAppReceiver {
 	public AndroidMusicReceiver() {
 		super(ACTION_ANDROID_STOP, PACKAGE_NAME, NAME);
 	}
-	/*
-	boolean shouldFetchFromMediaStore(Context ctx, long audioid) {
-		if (Util.checkForInstalledApp(ctx, GOOGLE_MUSIC_PACKAGE))
-			return false;
-		return super.shouldFetchFromMediaStore(ctx, audioid);
-	}
-	*/
-
 }

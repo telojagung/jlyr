@@ -72,11 +72,15 @@ public abstract class BuiltInMusicAppReceiver extends
 		// This is sent in the CM built-in player, at least.
 		boolean playing = bundle.getBoolean("playing", true);
 		
-		if (action.equals(stop_action) || !playing) {
+		if (isStopAction(action) || !playing) {
 			setState(Track.State.PLAYLIST_FINISHED);
 		} else {
 			setState(Track.State.RESUME);
 		}
+	}
+	
+	protected boolean isStopAction(String action) {
+		return action.equals(stop_action);
 	}
 
 	Track parseTrack(Context ctx, Bundle bundle) {

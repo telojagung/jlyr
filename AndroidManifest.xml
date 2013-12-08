@@ -38,7 +38,7 @@
         <service
             android:name=".LyricService"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.jlyr.playstatechanged" />
             </intent-filter>
@@ -46,14 +46,16 @@
 
         <receiver
             android:name=".receiver.ScrobbleDroidMusicReceiver"
-            android:enabled="true" >
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="net.jjc1138.android.scrobbler.action.MUSIC_STATUS" />
             </intent-filter>
         </receiver>
         <receiver
             android:name=".receiver.SamsungMusicReceiver"
-            android:enabled="true" >
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.samsung.sec.android.MusicPlayer.playstatechanged" />
                 <action android:name="com.samsung.sec.android.MusicPlayer.playbackcomplete" />
@@ -61,8 +63,28 @@
             </intent-filter>
         </receiver>
         <receiver
+            android:name=".receiver.SEMCMusicReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action
+                    android:name="com.sonyericsson.music.playbackcontrol.ACTION_PLAYBACK_PLAY" />
+                <action
+                    android:name="com.sonyericsson.music.playbackcontrol.ACTION_PLAYBACK_PAUSE" />
+                <action android:name="com.sonyericsson.music.TRACK_COMPLETED" />
+                <action android:name="com.sonyericsson.music.metachanged" />
+                <action android:name="com.sonyericsson.music.playbackcomplete" />
+                <action android:name="com.sonyericsson.music.playstatechanged" />
+                
+                <!-- from https://github.com/Ambroos/Xperia-Scrobbler-2013-Compatibility/ -->
+                <action android:name="com.sonyericsson.music.playbackcontrol.ACTION_TRACK_STARTED" />
+                <action android:name="com.sonyericsson.music.playbackcontrol.ACTION_PAUSED" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".receiver.AndroidMusicReceiver"
-            android:enabled="true" >
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.music.playstatechanged" />
                 <action android:name="com.android.music.playbackcomplete" />
