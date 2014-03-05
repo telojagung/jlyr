@@ -36,7 +36,7 @@ public class AZLyricsProvider extends DuckDuckGoProvider {
 		// TODO: we are relying on DuckDuckGo, we shouldn't:
 		// AZLyrics removes spaces: /lyrics/jamesblunt/staythenight.html
 		// and maybe punctuation also. See ILyrics they do it in Ruby, but I didn't get it right yet.
-		String search_query = "\\ site:azlyrics.com " + mTrack.getArtist() + " " + mTrack.getTitle();
+		String search_query = "! site:azlyrics.com " + mTrack.getArtist() + " " + mTrack.getTitle();
 		search(search_query, "http://www.azlyrics.com/lyrics/");
 	}
 	

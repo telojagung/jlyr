@@ -1,5 +1,8 @@
 package com.jlyr.providers;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
@@ -7,7 +10,6 @@ import org.jsoup.parser.Parser;
 import com.jlyr.util.Track;
 
 import edu.gvsu.masl.asynchttp.HttpConnection;
-
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -38,7 +40,14 @@ public abstract class DuckDuckGoProvider extends LyricsProvider {
 						doFail();
 					} else {
 						String content = redirect_meta.attr("content");
-						String url = content.substring(content.indexOf("url=")+4);
+						String url = content.substring(content.indexOf("uddg=")+5);
+						try {
+							url = URLDecoder.decode(url, "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							Log.e(TAG, "URLEncoder lacks support for UTF-8!?");
+							doFail();
+							break;
+						}
 						if (url.startsWith(expected_url)) {
 							getActualContent(url);
 						} else {
